@@ -1,18 +1,21 @@
 package main
 
 import (
-	"errors"
+	"fmt"
 
 	"github.com/opensourceways/community-robot-lib/config"
-	"github.com/opensourceways/community-robot-lib/robot-gitee-framework"
+	framework "github.com/opensourceways/community-robot-lib/robot-gitee-framework"
 	sdk "github.com/opensourceways/go-gitee/gitee"
 	"github.com/sirupsen/logrus"
 )
 
-// TODO: set botName
-const botName = ""
+const botName = "tech4dx-label"
 
 type iClient interface {
+	CreateIssueComment(org, repo string, number string, comment string) error
+	AddMultiIssueLabel(org, repo, number string, label []string) error
+	GetRepoLabels(owner, repo string) ([]sdk.Label, error)
+	AssignGiteeIssue(org, repo string, number string, login string) error
 }
 
 func newRobot(cli iClient) *robot {
@@ -27,36 +30,35 @@ func (bot *robot) NewConfig() config.Config {
 	return &configuration{}
 }
 
-func (bot *robot) getConfig(cfg config.Config) (*configuration, error) {
-	if c, ok := cfg.(*configuration); ok {
-		return c, nil
+func (bot *robot) getConfig(cfg config.Config, org, repo string) (*botConfig, error) {
+	c, ok := cfg.(*configuration)
+	if !ok {
+		return nil, fmt.Errorf("can't convert to configuration")
 	}
-	return nil, errors.New("can't convert to configuration")
+
+	if bc := c.configFor(org, repo); bc != nil {
+		return bc, nil
+	}
+
+	return nil, fmt.Errorf("no config for this repo:%s/%s", org, repo)
 }
 
 func (bot *robot) RegisterEventHandler(f framework.HandlerRegitster) {
 	f.RegisterIssueHandler(bot.handleIssueEvent)
-	f.RegisterPullRequestHandler(bot.handlePREvent)
 	f.RegisterNoteEventHandler(bot.handleNoteEvent)
-	f.RegisterPushEventHandler(bot.handlePushEvent)
-}
-
-func (bot *robot) handlePREvent(e *sdk.PullRequestEvent, c config.Config, log *logrus.Entry) error {
-	// TODO: if it doesn't needd to hand PR event, delete this function.
-	return nil
 }
 
 func (bot *robot) handleIssueEvent(e *sdk.IssueEvent, c config.Config, log *logrus.Entry) error {
-	// TODO: if it doesn't needd to hand Issue event, delete this function.
-	return nil
-}
+	org, repo := e.GetOrgRepo()
 
-func (bot *robot) handlePushEvent(e *sdk.PushEvent, c config.Config, log *logrus.Entry) error {
-	// TODO: if it doesn't needd to hand Push event, delete this function.
-	return nil
+	cfg, err := bot.getConfig(c, org, repo)
+	if err != nil {
+		return err
+	}
+
+	return bot.handleIssueCreate(e, cfg, log)
 }
 
 func (bot *robot) handleNoteEvent(e *sdk.NoteEvent, c config.Config, log *logrus.Entry) error {
-	// TODO: if it doesn't needd to hand Note event, delete this function.
 	return nil
 }
