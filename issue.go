@@ -81,7 +81,7 @@ func (bot *robot) handleIssueCreate(e *sdk.IssueEvent, cfg *botConfig, log *logr
 }
 
 func (bot *robot) handleIssueComment(e *sdk.NoteEvent, cfg *botConfig, log *logrus.Entry) error {
-	if e.IsCreatingCommentEvent() {
+	if !e.IsCreatingCommentEvent() {
 		return nil
 	}
 
@@ -99,7 +99,7 @@ func (bot *robot) handleIssueComment(e *sdk.NoteEvent, cfg *botConfig, log *logr
 	org, repo := e.GetOrgRepo()
 	number := e.GetIssueNumber()
 
-	if err := bot.cli.AddMultiIssueLabel(org, repo, number, labels.UnsortedList()); err != nil {
+	if err := bot.addMutilLabels(org, repo, number, labels); err != nil {
 		return err
 	}
 
@@ -128,16 +128,10 @@ func (bot *robot) handleIssueComment(e *sdk.NoteEvent, cfg *botConfig, log *logr
 func (bot *robot) handleIssueNoLabels(e *sdk.IssueEvent, cfg *botConfig, log *logrus.Entry) error {
 	issue := e.GetIssue()
 	org, repo := e.GetOrgRepo()
+	number := e.GetIssueNumber()
 	labels := parseLabelsFromIssue(issue.GetBody(), issue.GetTypeName())
 
-	repoLabels, err := bot.getRepoLabelSet(org, repo)
-	if err != nil {
-		return err
-	}
-
-	canAdd := labels.Intersection(repoLabels)
-
-	if err := bot.cli.AddMultiIssueLabel(org, repo, issue.GetNumber(), canAdd.UnsortedList()); err != nil {
+	if err := bot.addMutilLabels(org, repo, number, labels); err != nil {
 		return err
 	}
 
@@ -154,6 +148,17 @@ func (bot *robot) handleIssueNoLabels(e *sdk.IssueEvent, cfg *botConfig, log *lo
 	}
 
 	return bot.handleIssueBodyWords(assignee, labels, e, cfg)
+}
+
+func (bot *robot) addMutilLabels(org, repo, number string, labels sets.String) error {
+	repoLabels, err := bot.getRepoLabelSet(org, repo)
+	if err != nil {
+		return err
+	}
+
+	canAdd := labels.Intersection(repoLabels)
+
+	return bot.cli.AddMultiIssueLabel(org, repo, number, canAdd.UnsortedList())
 }
 
 func (bot *robot) handleIssueHasLabels(e *sdk.IssueEvent, cfg *botConfig, log *logrus.Entry) error {
@@ -241,12 +246,12 @@ func (bot *robot) handleIssueBodyWords(
 		return nil
 	}
 
-	labelsFind := labels.Intersection(labesToAdd)
+	labelsFind := labels.Difference(labesToAdd)
 	if len(labelsFind) == 0 {
 		return nil
 	}
 
-	return bot.createIssueHelloComment(assignee, cfg.MenterPath, cfg.ParitiTplPath, labelsFind, e)
+	return bot.createIssueHelloComment(cfg.MenterPath, cfg.ParitiTplPath, assignee, labelsFind, e)
 }
 
 func (bot *robot) createIssueHelloComment(
