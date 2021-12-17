@@ -16,6 +16,7 @@ type iClient interface {
 	AddMultiIssueLabel(org, repo, number string, label []string) error
 	GetRepoLabels(owner, repo string) ([]sdk.Label, error)
 	AssignGiteeIssue(org, repo string, number string, login string) error
+	GetBot() (sdk.User, error)
 }
 
 func newRobot(cli iClient) *robot {
@@ -60,5 +61,16 @@ func (bot *robot) handleIssueEvent(e *sdk.IssueEvent, c config.Config, log *logr
 }
 
 func (bot *robot) handleNoteEvent(e *sdk.NoteEvent, c config.Config, log *logrus.Entry) error {
+	org, repo := e.GetOrgRepo()
+
+	cfg, err := bot.getConfig(c, org, repo)
+	if err != nil {
+		return err
+	}
+
+	if e.IsIssue() {
+		return bot.handleIssueComment(e, cfg, log)
+	}
+
 	return nil
 }
