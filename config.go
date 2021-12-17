@@ -67,9 +67,6 @@ type botConfig struct {
 	// DescisionTplPath the file path of descision template
 	DescisionTplPath string `json:"descision_tpl_path" required:"true"`
 
-	// PRCommentTplPath the file path of pull request comment template
-	PRCommentTplPath string `json:"pr_comment_tpl_path" required:"true"`
-
 	// ParitiTplPath  the file path of pariti template
 	ParitiTplPath string `json:"pariti_tpl_path" required:"true"`
 
@@ -96,10 +93,6 @@ func (c *botConfig) validate() error {
 
 	if c.DescisionTplPath == "" {
 		return fmt.Errorf(cfgErr, "descision_tpl_path")
-	}
-
-	if c.PRCommentTplPath == "" {
-		return fmt.Errorf(cfgErr, "pr_comment_tpl_path")
 	}
 
 	if c.ParitiTplPath == "" {
