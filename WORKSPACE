@@ -519,15 +519,15 @@ go_repository(
 go_repository(
     name = "com_github_opensourceways_community_robot_lib",
     importpath = "github.com/opensourceways/community-robot-lib",
-    sum = "h1:pucQT7RZ7IdLEMOoMX7TFlD0uTnZ/o+6KOSNYbNMoAY=",
-    version = "v0.0.0-20211215101246-ddb4212056d0",
+    sum = "h1:UdBZcOGPmQa7I/ZN9KKgvt3p4qygZDixwEZWzPMAQZ8=",
+    version = "v0.0.0-20211220063904-5d625d7719ea",
 )
 
 go_repository(
     name = "com_github_opensourceways_go_gitee",
     importpath = "github.com/opensourceways/go-gitee",
-    sum = "h1:9c6nbXjoSoSzzZVGzYp8pwP8pjZozdyBny4tTfwsnzg=",
-    version = "v0.0.0-20211215060819-f7e8cdf464a2",
+    sum = "h1:Spuhf5oSV5n5ZpaKdEAVd3qEeP0O5qew7LdmhrSJ+YU=",
+    version = "v0.0.0-20211217093747-04a27605275e",
 )
 
 go_repository(
@@ -708,8 +708,8 @@ go_repository(
 go_repository(
     name = "io_k8s_apimachinery",
     importpath = "k8s.io/apimachinery",
-    sum = "h1:DTARnyzmdHMz7bFWFDDm22AM4pLWTQECMpRTFu2d2OM=",
-    version = "v0.22.1",
+    sum = "h1:ejz6y/zNma8clPVfNDLnPbleBo6MpoFy/HBiBqCouVk=",
+    version = "v0.22.2",
 )
 
 go_repository(
