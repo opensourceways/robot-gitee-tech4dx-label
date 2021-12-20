@@ -7,7 +7,6 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/opensourceways/community-robot-lib/giteeclient"
 	sdk "github.com/opensourceways/go-gitee/gitee"
 	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/util/sets"
@@ -62,7 +61,7 @@ type Mentor struct {
 }
 
 func (bot *robot) handleIssueCreate(e *sdk.IssueEvent, cfg *botConfig, log *logrus.Entry) error {
-	if e.GetAction() != giteeclient.StatusOpen {
+	if e.GetAction() != sdk.ActionOpen {
 		return nil
 	}
 
@@ -327,10 +326,14 @@ func (bot *robot) genIssueAssignee(mentorPath, issueAuthor string, labes sets.St
 }
 
 func (bot *robot) isEntUser(login string) bool {
-	orgOrigin := "open_euler"
+	enterprise := "open_euler"
 
-	// TODO:  判断作者是不是企业成员
-	return login == orgOrigin
+	m, err := bot.cli.GetEnterprisesMember(enterprise, login)
+	if err != nil {
+		return false
+	}
+
+	return login == m.User
 
 }
 

@@ -17,6 +17,7 @@ type iClient interface {
 	GetRepoLabels(owner, repo string) ([]sdk.Label, error)
 	AssignGiteeIssue(org, repo string, number string, login string) error
 	GetBot() (sdk.User, error)
+	GetEnterprisesMember(enterprise, login string) (sdk.EnterpriseMember, error)
 }
 
 func newRobot(cli iClient) *robot {
